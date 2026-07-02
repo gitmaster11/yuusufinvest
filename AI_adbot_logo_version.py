@@ -311,7 +311,12 @@ async def get_browser():
     global _playwright_ctx, _browser
     if _browser is None:
         _playwright_ctx = await async_playwright().start()
-        _browser = await _playwright_ctx.chromium.launch()
+        _browser = await _playwright_ctx.chromium.launch(
+        executable_path="/usr/bin/google-chrome-stable",
+        args=[
+            "--no-sandbox", 
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage"])
     return _browser
 
 
