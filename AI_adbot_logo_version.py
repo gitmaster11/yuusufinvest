@@ -310,7 +310,7 @@ _browser = None
 import subprocess
 import os
 from playwright.async_api import async_playwright
-
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/ms-playwright"
 async def get_browser():
     global _playwright_ctx, _browser
     if _browser is None:

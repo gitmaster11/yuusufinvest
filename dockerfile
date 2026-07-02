@@ -8,8 +8,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . .
 
-# Brauzerlarni aynan shu papkaga o'rnatamiz
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+# Papkani aniq belgilaymiz va unga yozish uchun ruxsatni ta'minlaymiz
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
+RUN mkdir -p /app/ms-playwright
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN playwright install chromium && playwright install-deps chromium
