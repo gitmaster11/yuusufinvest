@@ -307,21 +307,21 @@ _playwright_ctx = None
 _browser = None
 
 
+import subprocess
 import os
 from playwright.async_api import async_playwright
-
-# ENV ni funksiyadan tashqariga chiqar!
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/ms-playwright"
-
-_playwright_ctx = None
-_browser = None
 
 async def get_browser():
     global _playwright_ctx, _browser
     if _browser is None:
-        if _playwright_ctx is None:
-            _playwright_ctx = await async_playwright().start()
+        # 1. Brauzerni yuklashga majburlaymiz (agar yo'q bo'lsa)
+        print("Brauzer tekshirilmoqda...")
+        subprocess.run(["playwright", "install", "chromium"], check=True)
         
+        # 2. Context ni ishga tushirish
+        _playwright_ctx = await async_playwright().start()
+        
+        # 3. Launch
         _browser = await _playwright_ctx.chromium.launch(
             args=[
                 "--no-sandbox", 
@@ -330,7 +330,6 @@ async def get_browser():
             ]
         )
     return _browser
-
 
 async def close_browser():
     global _playwright_ctx, _browser
