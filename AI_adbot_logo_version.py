@@ -324,11 +324,15 @@ async def get_browser():
         # 3. Launch
         _browser = await _playwright_ctx.chromium.launch(
             args=[
-                "--no-sandbox", 
+                "--no-sandbox",
                 "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage"
-            ]
-        )
+                "--disable-dev-shm-usage",
+                "--disable-gpu",              # GPU ni o'chirish tezlikni oshiradi
+                "--no-zygote",                # Xotirani tejaydi
+                "--single-process",           # Bitta jarayonda ishlash
+                "--disable-extensions"        # Kengaytmalarni o'chirib qo'yish
+                     ]
+                                                )
     return _browser
 
 async def close_browser():
