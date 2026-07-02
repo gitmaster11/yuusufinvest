@@ -1,19 +1,14 @@
-FROM python:3.9-slim
-
-# Kerakli tizim kutubxonalari
-RUN apt-get update && apt-get install -y \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 \
-    libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 \
-    && rm -rf /var/lib/apt/lists/*
+# Microsoft'ning tayyor Playwright tasviridan foydalanamiz
+FROM mcr.microsoft.com/playwright/python:v1.44.0-jammy
 
 WORKDIR /app
+
+# Fayllarni ko'chiramiz
 COPY . .
 
-# Brauzerlarni yuklash joyini belgilash
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
+# Kutubxonalarni o'rnatamiz
 RUN pip install --no-cache-dir -r requirements.txt
-RUN playwright install chromium
-RUN playwright install-deps chromium
 
+# Brauzerlar allaqachon ichida bo'lgani uchun alohida install shart emas
+# Shunchaki botni ishga tushiramiz
 CMD ["python", "AI_adbot_logo_version.py"]
