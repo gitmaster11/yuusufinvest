@@ -7,7 +7,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 COPY . .
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Brauzer yuklash uchun alohida buyruqlar shart emas
+# Brauzerlarni aynan shu papkaga o'rnatamiz
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN playwright install chromium && playwright install-deps chromium
+
 CMD ["python", "AI_adbot_logo_version.py"]
