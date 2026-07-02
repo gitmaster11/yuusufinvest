@@ -307,15 +307,28 @@ _playwright_ctx = None
 _browser = None
 
 
+import os
+from playwright.async_api import async_playwright
+
+# ENV ni funksiyadan tashqariga chiqar!
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/ms-playwright"
+
+_playwright_ctx = None
+_browser = None
+
 async def get_browser():
     global _playwright_ctx, _browser
     if _browser is None:
-        _playwright_ctx = await async_playwright().start()
+        if _playwright_ctx is None:
+            _playwright_ctx = await async_playwright().start()
+        
         _browser = await _playwright_ctx.chromium.launch(
-        args=[
-            "--no-sandbox", 
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage"])
+            args=[
+                "--no-sandbox", 
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage"
+            ]
+        )
     return _browser
 
 

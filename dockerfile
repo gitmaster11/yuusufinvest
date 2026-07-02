@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-# Kerakli tizim kutubxonalari
+# Kerakli kutubxonalar
 RUN apt-get update && apt-get install -y \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 \
     libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 \
@@ -9,12 +9,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . .
 
-# Playwright brauzerini va bog'liqliklarni o'rnatamiz
+# Brauzerni loyiha papkasi ichiga o'rnatamiz
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
 RUN pip install --no-cache-dir -r requirements.txt
-RUN playwright install chromium
-RUN playwright install-deps chromium
-
-# Brauzer joylashuvini aniq belgilaymiz
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN playwright install chromium && playwright install-deps chromium
 
 CMD ["python", "AI_adbot_logo_version.py"]
