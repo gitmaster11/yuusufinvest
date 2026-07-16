@@ -9,6 +9,7 @@ Kerakli kutubxonalar (o'rnatish):
 Ishga tushirish:
     python AI_adbot.py
 """
+
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -326,8 +327,7 @@ CARD_HTML_TEMPLATE = """
     .product-name { font-size: 45px; font-weight: 500; line-height: 1.1; color: #f1f5f9; margin-bottom: 30px; }
     .divider-thin { height: 1px; background: rgba(148,163,184,0.3); margin-bottom: 32px; }
     
-    .info-row { background: rgba(30,41,59,0.75); border-radius: 20px; padding: 24px 32px; margin-bottom: 22px; }
-    .info-label { display: flex; align-items: center; gap: 14px; font-size: 30px; color: #94a3b8; }
+   
     .dot { width: 20px; height: 20px; border-radius: 50%; display: inline-block; margin-right: 14px; }
     .info-value { font-size: 60px; font-weight: 700; margin-left: 34px; margin-top: 10px; }
     
@@ -343,11 +343,8 @@ CARD_HTML_TEMPLATE = """
         <div class="category">{{CATEGORY}}</div>
         <div class="product-name">{{NAME}} {{TAVSIF}}</div>
          <div class="divider"></div>
-        <div class="info-label"><span class="dot"></span>Narxi</div>
-        <div class="divider-thin"></div>
-        <div class="info-row price">           
-            <div class="info-value">{{PRICE}}</div>
-        </div>
+        
+        
        <div class="footer" style="text-align: center;">Yuusuf Invest | Qadriyatingizga mos</div>
 
     </div>
@@ -435,7 +432,6 @@ def _build_card_html(product: dict, product_img_bytes: bytes | None) -> str:
     html = html.replace("{{IMAGE_CONTENT}}", image_content)
     html = html.replace("{{CATEGORY}}", _esc(product["category"].upper()))
     html = html.replace("{{NAME}}", _esc(product["name"]))
-    html = html.replace("{{PRICE}}", _esc(formatted_price))
     html = html.replace("{{TAVSIF}}", _esc(product["tavsif"]))
     # Eski o'zgaruvchilarni bo'sh string bilan to'ldiramiz (shablon buzilmasligi uchun)
     return html
@@ -619,12 +615,14 @@ async def cmd_stats(message: types.Message):
 
 @dp.message(Command("currency"))
 async def cmd_currency(message: types.Message, state: FSMContext):
+    await state.clear()
     if message.from_user.id not in ADMIN_IDS: return
     await message.answer("💰 Hozirgi kurs: " + str(db_get_rate()) + "\nYangi kursni kiriting:")
     await state.set_state(AdminStates.waiting_for_rate)
 
 @dp.message(AdminStates.waiting_for_rate)
 async def process_rate(message: types.Message, state: FSMContext):
+    await state.clear()
     try:
         new_rate = float(message.text)
         db_set_rate(new_rate)
@@ -702,7 +700,7 @@ async def cb_show_image(call: types.CallbackQuery):
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="🛒 Ariza yuborish", 
-                web_app=WebAppInfo(url=f"https://gitmaster11.github.io/web_sahifa/?product={urllib.parse.quote(product['name'])}&price={price_uzs}")
+                web_app=WebAppInfo(url=f"https://gitmaster11.github.io/web_sahifa/?product={urllib.parse.quote(product['name'])}&price={price_uzs}&user_id={call.from_user.id}")
             )]
         ])
         
