@@ -8,8 +8,8 @@ Kerakli kutubxonalar (o'rnatish):
 
 Ishga tushirish:
     python AI_adbot.py
-"""
-
+""" 
+from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -48,7 +48,7 @@ class AdminStates(StatesGroup):
 
 
 
-NO_IMAGE_SVG = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:24px;font-family:sans-serif;">Rasm yoq</div>'
+NO_IMAGE_SVG = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:24px;font-family:sans-serif;">Rasm mavjud emas</div>'
 
 from collections import OrderedDict
 
@@ -89,7 +89,7 @@ class LRUCache:
 #   _image_cache: 200 rasm × ~300KB = ~60MB RAM (xavfsiz)
 #   _card_cache:  200 karta × ~200KB = ~40MB RAM (xavfsiz)
 _image_cache: LRUCache = LRUCache(maxsize=200)
-_card_cache:  LRUCache = LRUCache(maxsize=600)
+_card_cache:  LRUCache = LRUCache(maxsize=200)
 _http_session: aiohttp.ClientSession | None = None
 _shared_page = None  # <--- Buni qo'shing
 
@@ -650,7 +650,7 @@ async def cb_category(call: types.CallbackQuery):
 
 
 @dp.callback_query(F.data.startswith("brd:"))
-@dp.callback_query(F.data.startswith("brd:"))
+
 async def cb_brand(call: types.CallbackQuery):
     current_rate = db_get_rate()
     brand = call.data[4:]
@@ -674,7 +674,6 @@ async def cb_brand(call: types.CallbackQuery):
         await call.message.answer(text, reply_markup=kb, parse_mode="Markdown")
 # Yangi callback: Rasm so'ralganda generatsiya qilish
 
-_card_cache
 @dp.callback_query(F.data.startswith("show:"))
 async def cb_show_image(call: types.CallbackQuery):
     product_id = call.data.split(":")[1]
