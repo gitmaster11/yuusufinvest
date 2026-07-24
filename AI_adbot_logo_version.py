@@ -8,7 +8,8 @@ Kerakli kutubxonalar (o'rnatish):
 
 Ishga tushirish:
     python AI_adbot.py
-""" 
+"""
+
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
@@ -43,6 +44,7 @@ class RegistrationStates(StatesGroup):
 
 class AdminStates(StatesGroup):
     waiting_for_rate = State()
+    waiting_for_ad = State()  
 
 
 
@@ -525,6 +527,11 @@ dp           = Dispatcher(storage=MemoryStorage())
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext):
     # 1. Admin ekanligini tekshirish
+    db_save_user(
+        message.from_user.id,
+        message.from_user.username or "",
+        message.from_user.first_name or ""
+    )
     if message.from_user.id in ADMIN_IDS:
         await message.answer("Xush kelibsiz, Admin! \n\n/stats - Statistika\n\nFayl yuboring (Excel) bazani yangilash uchun.")
         await state.clear()
@@ -628,9 +635,105 @@ async def process_rate(message: types.Message, state: FSMContext):
         db_set_rate(new_rate)
         await message.answer(f"✅ Kurs yangilandi: {new_rate}")
         await state.clear()
+        clear_media_cache()  # Kurs o'zgarganda keshni tozalash foydali bo'lishi mumkin
     except:
         await message.answer("❌ Xatolik! Iltimos, faqat raqam kiriting (masalan: 12850)")
 
+
+@dp.message(Command("reklama"))
+async def cmd_reklama(message: types.Message, state: FSMContext):
+    if message.from_user.id not in ADMIN_IDS:
+        return
+    
+    await state.clear()
+    await message.answer("📢 Reklama matnini, rasmini, video'ni yoki boshqa kontentni yuboring:")
+    await state.set_state(AdminStates.waiting_for_ad)
+
+@dp.message(AdminStates.waiting_for_ad)
+async def process_ad(message: types.Message, state: FSMContext):
+    await state.clear()
+    
+    # ⭐ QO'SHISH: Format tekshirish
+    if not (message.text or message.photo or message.video or 
+            message.audio or message.voice or message.location):
+        await message.answer(
+            "❌ Noto'g'ri format!\n\n"
+            "Quyidagilarni yuborishingiz mumkin:\n"
+            "• 📝 Matn\n"
+            "• 🖼 Rasm (caption bilan)\n"
+            "• 🎥 Video (caption bilan)\n"
+            "• 🎵 Audio\n"
+            "• 🎙 Ovozli xabar\n"
+            "• 📍 Lokatsiya"
+        )
+        return
+    
+    with db_connect() as conn:
+        users = conn.execute("SELECT user_id FROM users").fetchall()
+    
+    if not users:
+        await message.answer("❌ Bazada foydalanuvchi yo'q")
+        return
+    
+    wait_msg = await message.answer(f"📤 Reklama {len(users)} ta mijozga yuborilmoqda...")
+    
+    success = 0
+    failed = 0
+    
+    for user_row in users:
+        user_id = user_row[0]
+        try:
+            if message.photo:
+                await bot_instance.send_photo(
+                    chat_id=user_id,
+                    photo=message.photo[-1].file_id,
+                    caption=message.caption or "",
+                    parse_mode="Markdown"
+                )
+            elif message.video:
+                await bot_instance.send_video(
+                    chat_id=user_id,
+                    video=message.video.file_id,
+                    caption=message.caption or "",
+                    parse_mode="Markdown"
+                )
+            elif message.audio:
+                await bot_instance.send_audio(
+                    chat_id=user_id,
+                    audio=message.audio.file_id,
+                    caption=message.caption or "",
+                    parse_mode="Markdown"
+                )
+            elif message.voice:
+                await bot_instance.send_voice(
+                    chat_id=user_id,
+                    voice=message.voice.file_id,
+                    caption=message.caption or "",
+                    parse_mode="Markdown"
+                )
+            elif message.location:
+                await bot_instance.send_location(
+                    chat_id=user_id,
+                    latitude=message.location.latitude,
+                    longitude=message.location.longitude
+                )
+            elif message.text:
+                await bot_instance.send_message(
+                    chat_id=user_id,
+                    text=message.text,
+                    parse_mode="Markdown"
+                )
+            
+            success += 1
+        except Exception as e:
+            logging.warning(f"Mijoz {user_id}: {e}")
+            failed += 1
+    
+    await wait_msg.edit_text(
+        f"✅ Reklama yuborish tugadi!\n\n"
+        f"📤 Muvaffaqiyatli: {success}\n"
+        f"❌ Xatolik: {failed}"
+    )
 # ── Kategoriya tugmasi bosilganda ─────────────────────────────────────────────
 
 
