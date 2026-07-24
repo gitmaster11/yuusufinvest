@@ -802,7 +802,7 @@ async def cb_show_image(call: types.CallbackQuery):
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="🛒 Ariza yuborish", 
-                web_app=WebAppInfo(url=f"https://gitmaster11.github.io/web_sahifa/?product={urllib.parse.quote(product['name'])}&price={price_uzs}&user_id={call.from_user.id}")
+                web_app=WebAppInfo(url=f"https://gitmaster11.github.io/web_sahifa/?product={urllib.parse.quote(product['name'])}&price={price_uzs}&image={urllib.parse.quote(product.get('image', ''))}&user_id={call.from_user.id}")
             )]
         ])
         
